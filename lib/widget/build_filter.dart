@@ -1,32 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class BuildFilter extends StatefulWidget {
+import '../bloc/filter_bloc.dart';
+import '../bloc/filter_event.dart';
+import '../bloc/filter_state.dart';
+
+class BuildFilter extends StatelessWidget {
   const BuildFilter({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
-  _BuildFilterState createState() => _BuildFilterState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => FilterBloc(),
+      child: const _BuildFilterView(),
+    );
+  }
 }
 
-class _BuildFilterState extends State<BuildFilter> {
-  double _minPrice = 1000;
-  double _maxPrice = 10000;
-  bool _freeReturn = false;
-  bool _buyerProtection = false;
-  bool _bestDeal = false;
-  bool _nearest = false;
-
-  // Section visibility states
-  bool _isDeliveryOptionsVisible = true;
-  bool _isPriceRangeVisible = true;
-  bool _isReviewRatingVisible = true;
-  bool _isOtherOptionsVisible = true;
+class _BuildFilterView extends StatelessWidget {
+  const _BuildFilterView();
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
-
     return Scaffold(
       backgroundColor: isDarkMode ? Colors.black : Colors.white,
       appBar: AppBar(
@@ -48,110 +45,115 @@ class _BuildFilterState extends State<BuildFilter> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSection(
-              title: "Opsi Pengiriman",
-              isVisible: _isDeliveryOptionsVisible,
-              onToggle: () {
-                setState(() {
-                  _isDeliveryOptionsVisible = !_isDeliveryOptionsVisible;
-                });
-              },
-              content: Column(
-                children: [
-                  _buildCheckbox("Instan (pengiriman dalam 2 jam)", isDarkMode),
-                  _buildCheckbox("Express (pengiriman 1 hari)", isDarkMode),
-                  _buildCheckbox("Standar (pengiriman 2-3 hari)", isDarkMode),
-                ],
-              ),
-            ),
-            Divider(color: isDarkMode ? Colors.grey[700] : Colors.grey),
-            _buildSection(
-              title: "Jangkauan Harga",
-              isVisible: _isPriceRangeVisible,
-              onToggle: () {
-                setState(() {
-                  _isPriceRangeVisible = !_isPriceRangeVisible;
-                });
-              },
-              content: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: BlocBuilder<FilterBloc, FilterState>(
+          builder: (context, state) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSection(
+                  context: context,
+                  title: "Opsi Pengiriman",
+                  isVisible: state.isDeliveryOptionsVisible,
+                  onToggle: () => context.read<FilterBloc>().add(ToggleDeliveryOptions()),
+                  content: Column(
                     children: [
-                      _buildPriceBox(_minPrice, isDarkMode),
-                      _buildPriceBox(_maxPrice, isDarkMode),
+                      _buildCheckbox("Instan (pengiriman dalam 2 jam)", isDarkMode),
+                      _buildCheckbox("Express (pengiriman 1 hari)", isDarkMode),
+                      _buildCheckbox("Standar (pengiriman 2-3 hari)", isDarkMode),
                     ],
                   ),
-                  RangeSlider(
-                    min: 1000,
-                    max: 10000,
-                    values: RangeValues(_minPrice, _maxPrice),
-                    onChanged: (values) {
-                      setState(() {
-                        _minPrice = values.start;
-                        _maxPrice = values.end;
-                      });
-                    },
+                ),
+                Divider(color: isDarkMode ? Colors.grey[700] : Colors.grey),
+                _buildSection(
+                  context: context,
+                  title: "Jangkauan Harga",
+                  isVisible: state.isPriceRangeVisible,
+                  onToggle: () => context.read<FilterBloc>().add(TogglePriceRange()),
+                  content: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildPriceBox(state.minPrice, isDarkMode),
+                          _buildPriceBox(state.maxPrice, isDarkMode),
+                        ],
+                      ),
+                      RangeSlider(
+                        min: 1000,
+                        max: 10000,
+                        values: RangeValues(state.minPrice, state.maxPrice),
+                        onChanged: (values) {
+                          context.read<FilterBloc>().add(UpdatePriceRange(values.start, values.end));
+                        },
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-            Divider(color: isDarkMode ? Colors.grey[700] : Colors.grey),
-            _buildSection(
-              title: "Rata-Rata Ulasan",
-              isVisible: _isReviewRatingVisible,
-              onToggle: () {
-                setState(() {
-                  _isReviewRatingVisible = !_isReviewRatingVisible;
-                });
-              },
-              content: Row(children: _buildStarRating(4, isDarkMode)),
-            ),
-            Divider(color: isDarkMode ? Colors.grey[700] : Colors.grey),
-            _buildSection(
-              title: "Lainnya",
-              isVisible: _isOtherOptionsVisible,
-              onToggle: () {
-                setState(() {
-                  _isOtherOptionsVisible = !_isOtherOptionsVisible;
-                });
-              },
-              content: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _buildSelectableButton("Free Return", _freeReturn, isDarkMode, () {
-                    setState(() => _freeReturn = !_freeReturn);
-                  }),
-                  _buildSelectableButton("Buyer Protection", _buyerProtection, isDarkMode, () {
-                    setState(() => _buyerProtection = !_buyerProtection);
-                  }),
-                  _buildSelectableButton("Best Deal", _bestDeal, isDarkMode, () {
-                    setState(() => _bestDeal = !_bestDeal);
-                  }),
-                  _buildSelectableButton("Nearest", _nearest, isDarkMode, () {
-                    setState(() => _nearest = !_nearest);
-                  }),
-                ],
-              ),
-            ),
-          ],
+                ),
+                Divider(color: isDarkMode ? Colors.grey[700] : Colors.grey),
+                _buildSection(
+                  context: context,
+                  title: "Rata-Rata Ulasan",
+                  isVisible: state.isReviewRatingVisible,
+                  onToggle: () => context.read<FilterBloc>().add(ToggleReviewRating()),
+                  content: Row(children: _buildStarRating(4, isDarkMode)),
+                ),
+                Divider(color: isDarkMode ? Colors.grey[700] : Colors.grey),
+                _buildSection(
+                  context: context,
+                  title: "Lainnya",
+                  isVisible: state.isOtherOptionsVisible,
+                  onToggle: () => context.read<FilterBloc>().add(ToggleOtherOptions()),
+                  content: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildSelectableButton(
+                        context: context,
+                        text: "Free Return",
+                        selected: state.freeReturn,
+                        isDarkMode: isDarkMode,
+                        onTap: () => context.read<FilterBloc>().add(ToggleFreeReturn()),
+                      ),
+                      _buildSelectableButton(
+                        context: context,
+                        text: "Buyer Protection",
+                        selected: state.buyerProtection,
+                        isDarkMode: isDarkMode,
+                        onTap: () => context.read<FilterBloc>().add(ToggleBuyerProtection()),
+                      ),
+                      _buildSelectableButton(
+                        context: context,
+                        text: "Best Deal",
+                        selected: state.bestDeal,
+                        isDarkMode: isDarkMode,
+                        onTap: () => context.read<FilterBloc>().add(ToggleBestDeal()),
+                      ),
+                      _buildSelectableButton(
+                        context: context,
+                        text: "Nearest",
+                        selected: state.nearest,
+                        isDarkMode: isDarkMode,
+                        onTap: () => context.read<FilterBloc>().add(ToggleNearest()),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
   Widget _buildSection({
+    required BuildContext context,
     required String title,
     required bool isVisible,
     required VoidCallback onToggle,
     required Widget content,
   }) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -219,7 +221,13 @@ class _BuildFilterState extends State<BuildFilter> {
     );
   }
 
-  Widget _buildSelectableButton(String text, bool selected, bool isDarkMode, VoidCallback onTap) {
+  Widget _buildSelectableButton({
+    required BuildContext context,
+    required String text,
+    required bool selected,
+    required bool isDarkMode,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
