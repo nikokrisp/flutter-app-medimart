@@ -184,16 +184,34 @@ class LoginPageState extends State<LoginPage> {
         Builder(
           builder: (context) {
             final screenHeight = MediaQuery.of(context).size.height;
+
             return Positioned(
-              top: screenHeight * 0.16, // 20% from top of the screen
+              top: screenHeight * 0.15,
               left: 0,
               right: 0,
-              child: FractionallySizedBox(
-                widthFactor: 0.5, // 50% width of screen
-                alignment: Alignment.center,
-                child: Image.asset(
-                  'images/dark medimart logo.png',
-                  fit: BoxFit.contain,
+              child: TweenAnimationBuilder<double>(
+                duration: const Duration(milliseconds: 1500),
+                tween: Tween(begin: -50.0, end: 0.0),
+                curve: Curves.easeOut,
+                builder: (context, value, child) {
+                  return Opacity(
+                    opacity: (value + 50) / 50, // Fade from 0 to 1
+                    child: Transform.translate(
+                      offset: Offset(0, value),
+                      child: child,
+                    ),
+                  );
+                },
+                child: Hero(
+                  tag: 'flutter_login_logo',
+                  child: FractionallySizedBox(
+                    widthFactor: 0.5,
+                    alignment: Alignment.center,
+                    child: Image.asset(
+                      'images/dark medimart logo.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                 ),
               ),
             );
