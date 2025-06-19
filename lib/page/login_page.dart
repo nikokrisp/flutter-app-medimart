@@ -147,40 +147,77 @@ class LoginPageState extends State<LoginPage> {
     // The decision of whether to show *this* widget or the main app content
     // is made in main.dart using the StreamBuilder.
     return FlutterLogin(
-       title: 'Medimart', // Your app title
-       logo: const AssetImage('images/dark medimart logo.png'), // Your app logo path
-       onLogin: _authUser, // Pass your Firebase login function
-       onSignup: _signupUser, // Pass your Firebase signup function
-       onRecoverPassword: _recoverPassword, // Pass your Firebase password recovery function
-       // onSubmitAnimationCompleted is called *after* a successful login animation.
-       // Since main.dart's StreamBuilder is listening to auth state changes,
-       // the UI will automatically switch to the main app content when a user
-       // logs in or signs up successfully. No explicit navigation needed here.
-       onSubmitAnimationCompleted: () {
-         debugPrint('Login animation complete from LoginPage!');
-         // The state change should now be picked up by the StreamBuilder in main.dart
-       },
-       // Customize appearance, text, etc. here
-       theme: LoginTheme(
-         // You can customize colors, shapes, etc. using your app's theme context
-         primaryColor: Theme.of(context).primaryColor,
-         accentColor: Theme.of(context).colorScheme.secondary,
-         buttonTheme: LoginButtonTheme(
-           backgroundColor: Colors.blue[900],
-           highlightColor: Colors.blue[700],
-           splashColor: Colors.blue[500],
-         ),
-         cardTheme: CardTheme(
-           color: Theme.of(context).cardColor.withAlpha((0.8 * 255).toInt()),
-         ),
-         // Add more theme customizations if needed
-       ),
-       // Optional: Customize text messages shown in the UI
-       messages: LoginMessages(
-         loginButton: 'LOG IN',
-         signupButton: 'SIGN UP',
-         forgotPasswordButton: 'Forgot Password?',
-       ),
+      onLogin: _authUser, // Pass your Firebase login function
+      onSignup: _signupUser, // Pass your Firebase signup function
+      onRecoverPassword: _recoverPassword, // Pass your Firebase password recovery function
+      // onSubmitAnimationCompleted is called *after* a successful login animation.
+      // Since main.dart's StreamBuilder is listening to auth state changes,
+      // the UI will automatically switch to the main app content when a user
+      // logs in or signs up successfully. No explicit navigation needed here.
+      onSubmitAnimationCompleted: () {
+        debugPrint('Login animation complete from LoginPage!');
+        // The state change should now be picked up by the StreamBuilder in main.dart
+      },
+      // Customize appearance, text, etc. here
+      theme: LoginTheme(
+        // You can customize colors, shapes, etc. using your app's theme context
+        logoWidth: 1, // Adjust logo width
+        primaryColor: Theme.of(context).primaryColor,
+        accentColor: Theme.of(context).colorScheme.secondary,
+        buttonTheme: LoginButtonTheme(
+          backgroundColor: Colors.blue[900],
+          highlightColor: Colors.blue[700],
+          splashColor: Colors.blue[500],
+        ),
+        cardTheme: CardTheme(
+          color: Theme.of(context).cardColor.withAlpha((0.8 * 255).toInt()),
+        ),
+        // Add more theme customizations if needed
+      ),
+      // Optional: Customize text messages shown in the UI
+      messages: LoginMessages(
+        loginButton: 'LOG IN',
+        signupButton: 'SIGN UP',
+        forgotPasswordButton: 'Forgot Password?',
+      ),
+      children: [
+        Builder(
+          builder: (context) {
+            final screenHeight = MediaQuery.of(context).size.height;
+
+            return Positioned(
+              top: screenHeight * 0.15,
+              left: 0,
+              right: 0,
+              child: TweenAnimationBuilder<double>(
+                duration: const Duration(milliseconds: 1500),
+                tween: Tween(begin: -50.0, end: 0.0),
+                curve: Curves.easeOut,
+                builder: (context, value, child) {
+                  return Opacity(
+                    opacity: (value + 50) / 50, // Fade from 0 to 1
+                    child: Transform.translate(
+                      offset: Offset(0, value),
+                      child: child,
+                    ),
+                  );
+                },
+                child: Hero(
+                  tag: 'flutter_login_logo',
+                  child: FractionallySizedBox(
+                    widthFactor: 0.5,
+                    alignment: Alignment.center,
+                    child: Image.asset(
+                      'images/dark medimart logo.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
        // Optional: Add custom input validators if needed
       //  emailValidator: (value) { /* return error string or null */ },
       //  passwordValidator: (value) { /* return error string or null */ },
