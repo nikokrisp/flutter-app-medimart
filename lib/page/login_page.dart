@@ -147,8 +147,11 @@ class LoginPageState extends State<LoginPage> {
     // The decision of whether to show *this* widget or the main app content
     // is made in main.dart using the StreamBuilder.
     return FlutterLogin(
-       title: 'Medimart', // Your app title
-       logo: const AssetImage('images/dark medimart logo.png'), // Your app logo path
+       logo: SizedBox(
+         width: 180,
+         height: 180,
+         child: Image.asset('images/dark medimart logo.png'),
+       ),
        onLogin: _authUser, // Pass your Firebase login function
        onSignup: _signupUser, // Pass your Firebase signup function
        onRecoverPassword: _recoverPassword, // Pass your Firebase password recovery function
