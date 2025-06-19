@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "C:/Work/Flutter Works/flutter_medimart/windows"
+    "cmake.sourceDirectory": "C:/Work/Flutter Works/flutter_medimart/windows",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }
